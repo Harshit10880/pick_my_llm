@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "category": "Python",
+    "question": "What is the output of print(type([])) in Python? Reply with only the option letter.\nA) <class 'dict'>\nB) <class 'list'>\nC) <class 'tuple'>\nD) <class 'set'>",
+    "correct_answer": "B"
+  },
+  {
+    "id": 2,
+    "category": "General Knowledge",
+    "question": "What is the capital of Gujarat? Reply with just the city name.",
+    "correct_answer": "Gandhinagar"
+  },
+  {
+    "id": 3,
+    "category": "Gujarati Language",
+    "question": "ગુજરાતની રાજ્યભાષા કઈ છે? ફક્ત ભાષાનું નામ લખો.",
+    "correct_answer": "ગુજરાતી"
+  },
+  {
+    "id": 4,
+    "category": "Machine Learning",
+    "question": "Which library is primarily used for data manipulation and dataframes in Python? Reply with only the library name.",
+    "correct_answer": "pandas"
+  },
+  {
+    "id": 5,
+    "category": "Logic",
+    "question": "If a car travels 60 km in 1 hour, what is its speed in km/h? Give only the number.",
+    "correct_answer": "60"
+  }
+]
