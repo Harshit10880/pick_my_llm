@@ -45,7 +45,7 @@ def run_benchmark(questions: list, selected_providers: list, api_keys: dict, del
                 })
                 continue
 
-            # Attempt call with a simple retry loop for rate limits
+            # Attempt call with exponential backoff retry loop for rate limits
             success = False
             attempts = 0
             max_retries = 3
@@ -56,7 +56,6 @@ def run_benchmark(questions: list, selected_providers: list, api_keys: dict, del
                 res_data = call_llm(provider, model_name, question_text, api_key)
                 
                 if res_data["error"] and ("rate_limit" in res_data["error"].lower() or "429" in res_data["error"]):
-                    # Exponential backoff sleep if rate limited
                     sleep_time = delay_seconds * (2 ** attempts)
                     time.sleep(sleep_time)
                 else:
@@ -76,7 +75,7 @@ def run_benchmark(questions: list, selected_providers: list, api_keys: dict, del
                 "error": res_data["error"]
             })
 
-            # Polite pause between model requests to stay safe on free limits
+            # Polite pause between requests to stay safe on free limits
             time.sleep(delay_seconds)
 
     return pd.DataFrame(results)
