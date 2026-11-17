@@ -77,16 +77,16 @@ scoring_mode = st.sidebar.radio(
 )
 
 if scoring_mode == "LLM-as-a-Judge (AI evaluates open-ended answers)":
-    judge_provider_options = ["Groq", "Google AI Studio", "OpenRouter", "Cerebras", "Mistral AI"]
+    judge_provider_options = ["Google AI Studio", "Groq", "OpenRouter", "Cerebras", "Mistral AI"]
     judge_provider = st.sidebar.selectbox("Judge Model Provider", judge_provider_options)
     judge_model_defaults = {
-        "Groq": "llama-3.1-8b-instant",
-        "Google AI Studio": "gemini-2.5-flash",
-        "OpenRouter": "mistralai/mistral-7b-instruct:free",
-        "Cerebras": "llama3.1-8b",
+        "Google AI Studio": "gemini-3.8-flash",
+        "Groq": "llama-3.3-70b-versatile",
+        "OpenRouter": "google/gemma-4-26b-a4b-it:free",
+        "Cerebras": "llama-3.3-70b",
         "Mistral AI": "mistral-small-latest"
     }
-    judge_model = st.sidebar.text_input("Judge Model Name", value=judge_model_defaults[judge_provider])
+    judge_model = st.sidebar.text_input("Judge Model Name", value=judge_model_defaults.get(judge_provider, "gemini-3.8-flash"))
     st.sidebar.info("The judge model uses your already-entered API key for the selected provider.")
 else:
     judge_provider = None
@@ -112,34 +112,43 @@ with tab_benchmark:
 
     with col1:
         st.markdown("**Groq (Ultra-Fast Free Tier)**")
-        if st.checkbox("Llama 3.1 8B Instant", value=True):
-            selected_models.append({"provider": "Groq", "model": "llama-3.1-8b-instant"})
-        if st.checkbox("Llama 3.3 70B Versatile", value=False):
+        if st.checkbox("Llama 3.3 70B Versatile", value=True):
             selected_models.append({"provider": "Groq", "model": "llama-3.3-70b-versatile"})
+        if st.checkbox("Llama 3 8B (8192)", value=False):
+            selected_models.append({"provider": "Groq", "model": "llama3-8b-8192"})
+        custom_groq = st.text_input("Custom Groq Model", placeholder="e.g. mixtral-8x7b-32768")
+        if custom_groq:
+            selected_models.append({"provider": "Groq", "model": custom_groq.strip()})
 
     with col2:
         st.markdown("**Google AI Studio (Gemini)**")
-        if st.checkbox("Gemini 2.5 Flash", value=True):
-            selected_models.append({"provider": "Google AI Studio", "model": "gemini-2.5-flash"})
-        if st.checkbox("Gemini 2.5 Pro", value=False):
-            selected_models.append({"provider": "Google AI Studio", "model": "gemini-2.5-pro"})
+        if st.checkbox("Gemini 3.8 Flash (Latest)", value=True):
+            selected_models.append({"provider": "Google AI Studio", "model": "gemini-3.8-flash"})
+        if st.checkbox("Gemini 1.5 Flash", value=False):
+            selected_models.append({"provider": "Google AI Studio", "model": "gemini-1.5-flash"})
+        custom_gemini = st.text_input("Custom Gemini Model", placeholder="e.g. gemini-2.0-flash")
+        if custom_gemini:
+            selected_models.append({"provider": "Google AI Studio", "model": custom_gemini.strip()})
 
     with col3:
         st.markdown("**OpenRouter (Free Models)**")
+        if st.checkbox("Gemma 4 26B (Free)", value=True):
+            selected_models.append({"provider": "OpenRouter", "model": "google/gemma-4-26b-a4b-it:free"})
         if st.checkbox("Mistral 7B Instruct (Free)", value=False):
             selected_models.append({"provider": "OpenRouter", "model": "mistralai/mistral-7b-instruct:free"})
-        if st.checkbox("Llama 3.2 3B Instruct (Free)", value=False):
-            selected_models.append({"provider": "OpenRouter", "model": "meta-llama/llama-3.2-3b-instruct:free"})
+        custom_or = st.text_input("Custom OpenRouter Slug", placeholder="e.g. qwen/qwen-2.5-7b-instruct:free")
+        if custom_or:
+            selected_models.append({"provider": "OpenRouter", "model": custom_or.strip()})
 
     # More Providers Expander
     with st.expander("➕ More Providers: Cerebras, Mistral, Ollama (Local), or Custom Endpoint", expanded=False):
         c_col1, c_col2, c_col3 = st.columns(3)
         with c_col1:
             st.markdown("**Cerebras (Fastest Inference)**")
-            if st.checkbox("Cerebras Llama 3.1 8B", value=False):
-                selected_models.append({"provider": "Cerebras", "model": "llama3.1-8b"})
             if st.checkbox("Cerebras Llama 3.3 70B", value=False):
                 selected_models.append({"provider": "Cerebras", "model": "llama-3.3-70b"})
+            if st.checkbox("Cerebras Llama 3.1 8B", value=False):
+                selected_models.append({"provider": "Cerebras", "model": "llama3.1-8b"})
         with c_col2:
             st.markdown("**Mistral AI Official**")
             if st.checkbox("Mistral Small Latest", value=False):
@@ -221,8 +230,8 @@ with tab_benchmark:
                             "category": q.get("category", "General"),
                             "question": q["question"],
                             "correct_answer": q["correct_answer"],
-                            "answer": q["correct_answer"] if "8b" in m_name or "flash" in m_name else "Wrong Answer Example",
-                            "latency": 0.25 if "8b" in m_name else 0.75,
+                            "answer": q["correct_answer"] if "70b" in m_name or "flash" in m_name or "gemma" in m_name else "Sample answer",
+                            "latency": 0.25 if "groq" in m_name.lower() or "cerebras" in m_name.lower() else 0.65,
                             "prompt_tokens": 45,
                             "completion_tokens": 12,
                             "error": None
@@ -232,7 +241,7 @@ with tab_benchmark:
                 with st.spinner("Running live benchmark across selected models... Please wait."):
                     results_df = run_benchmark(questions_data, selected_models, api_keys, delay_seconds=1)
 
-            # Score answers
+            # Score answers with robust error awareness
             scores = []
             judge_verdicts = []
             scoring_progress = st.progress(0, text="Scoring model responses...")
@@ -241,7 +250,11 @@ with tab_benchmark:
             for i, (_, row) in enumerate(results_df.iterrows()):
                 scoring_progress.progress((i + 1) / total_rows, text=f"Evaluating response {i+1}/{total_rows}...")
 
-                if scoring_mode == "LLM-as-a-Judge (AI evaluates open-ended answers)":
+                # Check if the API call failed
+                if row.get("error"):
+                    verdict_bool = False
+                    verdict_str = "⚠️ API ERROR"
+                elif scoring_mode == "LLM-as-a-Judge (AI evaluates open-ended answers)":
                     judge_key = api_keys.get(judge_provider, "")
                     if demo_mode or not judge_key:
                         verdict_bool = score_exact_match(row["answer"], row["correct_answer"]) or \
@@ -293,6 +306,13 @@ with tab_benchmark:
         ranked_df = st.session_state["ranked_df"]
         results_df = st.session_state["results_df"]
 
+        # Alert banner if any API errors occurred
+        error_rows = results_df[results_df["error"].notnull()]
+        if not error_rows.empty:
+            with st.expander(f"⚠️ {len(error_rows)} API Calls Encountered Errors (Click to view)", expanded=True):
+                st.error("Some models failed to return responses due to invalid model names, expired endpoints, or missing keys:")
+                st.dataframe(error_rows[["model", "error"]].drop_duplicates(), use_container_width=True)
+
         # Recommendation Summary Box
         summary_text = generate_recommendation_summary(ranked_df)
         st.success(summary_text)
@@ -300,7 +320,7 @@ with tab_benchmark:
         # Leaderboard Table
         st.subheader("🏆 Model Leaderboard")
         st.dataframe(
-            ranked_df[["model", "accuracy_pct", "avg_latency", "total_cost", "final_score"]],
+            ranked_df[["model", "accuracy_pct", "avg_latency", "total_cost", "error_count", "final_score"]],
             use_container_width=True
         )
 
