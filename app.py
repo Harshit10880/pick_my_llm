@@ -162,6 +162,20 @@ with tab_benchmark:
             if st.checkbox("Ollama Mistral / Qwen", value=False):
                 selected_models.append({"provider": "Ollama (Local Offline)", "model": "mistral:latest", "custom_base_url": ollama_url})
 
+        st.markdown("---")
+        st.markdown("**💳 Commercial / Paid / Custom Models (OpenAI, DeepSeek, Together AI, vLLM)**")
+        cust_col1, cust_col2 = st.columns([1, 1])
+        with cust_col1:
+            custom_model_choice = st.text_input("Model ID to benchmark", placeholder="e.g. gpt-4o, gpt-4o-mini, deepseek-chat")
+        with cust_col2:
+            custom_endpoint_choice = st.text_input("Base URL", value=custom_url if custom_url else "https://api.openai.com/v1", help="OpenAI: https://api.openai.com/v1, DeepSeek: https://api.deepseek.com/v1")
+        if custom_model_choice:
+            selected_models.append({
+                "provider": "Custom (OpenAI-Compatible)",
+                "model": custom_model_choice.strip(),
+                "custom_base_url": custom_endpoint_choice.strip()
+            })
+
     # TEST DATASET SETUP
     st.subheader("2️⃣ Load Test Questions")
 

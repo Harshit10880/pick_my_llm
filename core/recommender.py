@@ -27,6 +27,18 @@ MODEL_PRICING = {
     "llama3.1:8b": {"input": 0.00, "output": 0.00},
     "mistral:latest": {"input": 0.00, "output": 0.00},
     "qwen2.5:7b": {"input": 0.00, "output": 0.00},
+    # Commercial / Paid Frontier Models (OpenAI, Anthropic, DeepSeek)
+    "gpt-4o": {"input": 2.50, "output": 10.00},
+    "gpt-4o-mini": {"input": 0.15, "output": 0.60},
+    "o3-mini": {"input": 1.10, "output": 4.40},
+    "o1-preview": {"input": 15.00, "output": 60.00},
+    "claude-3-5-sonnet": {"input": 3.00, "output": 15.00},
+    "claude-3.5-sonnet": {"input": 3.00, "output": 15.00},
+    "claude-3-haiku": {"input": 0.25, "output": 1.25},
+    "deepseek-chat": {"input": 0.14, "output": 0.28},
+    "deepseek-v3": {"input": 0.14, "output": 0.28},
+    "deepseek-reasoner": {"input": 0.55, "output": 2.19},
+    "deepseek-r1": {"input": 0.55, "output": 2.19},
     # Fallback default
     "default": {"input": 0.20, "output": 0.20}
 }
