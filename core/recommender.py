@@ -4,10 +4,24 @@ import numpy as np
 # Estimated public pricing per 1 million tokens (USD) for common free-tier/open models
 # Used for cost estimation simulations
 MODEL_PRICING = {
+    # Groq & Cerebras (Llama)
     "llama-3.1-8b-instant": {"input": 0.05, "output": 0.08},
     "llama-3.3-70b-versatile": {"input": 0.59, "output": 0.79},
+    "llama3.1-8b": {"input": 0.05, "output": 0.08},
+    "llama-3.3-70b": {"input": 0.59, "output": 0.79},
+    # Google Gemini
     "gemini-2.5-flash": {"input": 0.075, "output": 0.30},
     "gemini-2.5-pro": {"input": 1.25, "output": 5.00},
+    # Mistral AI
+    "mistral-small-latest": {"input": 0.20, "output": 0.60},
+    "codestral-latest": {"input": 0.30, "output": 0.90},
+    "mistralai/mistral-7b-instruct:free": {"input": 0.00, "output": 0.00},
+    # Local / Offline (Ollama) - Completely 100% Free!
+    "llama3.2:1b": {"input": 0.00, "output": 0.00},
+    "llama3.1:8b": {"input": 0.00, "output": 0.00},
+    "mistral:latest": {"input": 0.00, "output": 0.00},
+    "qwen2.5:7b": {"input": 0.00, "output": 0.00},
+    # Fallback default
     "default": {"input": 0.20, "output": 0.20}
 }
 
@@ -19,7 +33,7 @@ def calculate_costs(df: pd.DataFrame) -> pd.DataFrame:
     for _, row in df.iterrows():
         model_full_name = row["model"]
         # Extract model name string after provider slash
-        model_key = model_full_name.split("/")[-1].strip()
+        model_key = model_full_name.split("/")[-1].strip().lower()
         
         pricing = MODEL_PRICING.get(model_key, MODEL_PRICING["default"])
         

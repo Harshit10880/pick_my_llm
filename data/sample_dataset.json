@@ -1,32 +1,122 @@
 [
   {
     "id": 1,
-    "category": "Python",
+    "category": "Python Programming",
     "question": "What is the output of print(type([])) in Python? Reply with only the option letter.\nA) <class 'dict'>\nB) <class 'list'>\nC) <class 'tuple'>\nD) <class 'set'>",
     "correct_answer": "B"
   },
   {
     "id": 2,
-    "category": "General Knowledge",
-    "question": "What is the capital of Gujarat? Reply with just the city name.",
-    "correct_answer": "Gandhinagar"
+    "category": "Python Programming",
+    "question": "Which Python built-in method creates an immutable sequence of elements? Reply with the function name only.\nA) list()\nB) tuple()\nC) dict()\nD) set()",
+    "correct_answer": "B"
   },
   {
     "id": 3,
+    "category": "SQL & Databases",
+    "question": "Which SQL clause is used to filter records resulting from a GROUP BY aggregation? Reply with just the SQL keyword.",
+    "correct_answer": "HAVING"
+  },
+  {
+    "id": 4,
+    "category": "Machine Learning",
+    "question": "Which evaluation metric is defined as True Positives divided by (True Positives + False Positives)? Reply with only the metric name.",
+    "correct_answer": "Precision"
+  },
+  {
+    "id": 5,
+    "category": "Machine Learning",
+    "question": "Which library is primarily used for tabular data manipulation and dataframes in Python? Reply with only the library name.",
+    "correct_answer": "pandas"
+  },
+  {
+    "id": 6,
+    "category": "Math & Logic",
+    "question": "If a car travels 120 km in 2 hours, what is its average speed in km/h? Give only the number.",
+    "correct_answer": "60"
+  },
+  {
+    "id": 7,
+    "category": "Math & Logic",
+    "question": "What is the next number in the Fibonacci sequence: 1, 1, 2, 3, 5, 8, ...? Reply with only the number.",
+    "correct_answer": "13"
+  },
+  {
+    "id": 8,
     "category": "Gujarati Language",
     "question": "ગુજરાતની રાજ્યભાષા કઈ છે? ફક્ત ભાષાનું નામ લખો.",
     "correct_answer": "ગુજરાતી"
   },
   {
-    "id": 4,
-    "category": "Machine Learning",
-    "question": "Which library is primarily used for data manipulation and dataframes in Python? Reply with only the library name.",
-    "correct_answer": "pandas"
+    "id": 9,
+    "category": "Gujarati Language",
+    "question": "ગુજરાતનું પાટનગર કયું શહેર છે? ફક્ત શહેરનું નામ આપો.",
+    "correct_answer": "ગાંધીનગર"
   },
   {
-    "id": 5,
-    "category": "Logic",
-    "question": "If a car travels 60 km in 1 hour, what is its speed in km/h? Give only the number.",
-    "correct_answer": "60"
+    "id": 10,
+    "category": "Hindi Language",
+    "question": "भारत की राजधानी कौन सा शहर है? केवल शहर का नाम लिखें।",
+    "correct_answer": "नई दिल्ली"
+  },
+  {
+    "id": 11,
+    "category": "Cloud & DevOps",
+    "question": "Which HTTP status code represents 'Internal Server Error'? Reply with only the 3-digit number.",
+    "correct_answer": "500"
+  },
+  {
+    "id": 12,
+    "category": "Cloud & DevOps",
+    "question": "Which open-source container orchestration platform was originally developed by Google? Reply with the platform name only.",
+    "correct_answer": "Kubernetes"
+  },
+  {
+    "id": 13,
+    "category": "JSON Extraction",
+    "question": "Extract the age from the sentence: 'Alice is a 24-year-old software engineer in Mumbai.' Reply with only the number.",
+    "correct_answer": "24"
+  },
+  {
+    "id": 14,
+    "category": "General Knowledge",
+    "question": "What is the capital of Gujarat? Reply with just the city name.",
+    "correct_answer": "Gandhinagar"
+  },
+  {
+    "id": 15,
+    "category": "General Knowledge",
+    "question": "Which chemical element has the symbol 'Fe'? Reply with only the element name.",
+    "correct_answer": "Iron"
+  },
+  {
+    "id": 16,
+    "category": "Python Programming",
+    "question": "What keyword is used to define a generator function in Python? Reply with only the keyword.",
+    "correct_answer": "yield"
+  },
+  {
+    "id": 17,
+    "category": "Machine Learning",
+    "question": "In neural networks, what does CNN stand for? Reply with the full three words.",
+    "correct_answer": "Convolutional Neural Network"
+  },
+  {
+    "id": 18,
+    "category": "Math & Logic",
+    "question": "If you flip a fair coin 3 times, what is the total number of possible outcomes? Reply with only the number.",
+    "correct_answer": "8"
+  },
+  {
+    "id": 19,
+    "category": "Cloud & DevOps",
+    "question": "What command line tool is standard for version control tracking changes in code? Reply with only the tool name.",
+    "correct_answer": "git"
+  },
+  {
+    "id": 20,
+    "category": "Security & Safety",
+    "question": "What type of attack involves manipulating an AI's system instructions through user input? Reply with only the two-word term.",
+    "correct_answer": "Prompt Injection"
   }
 ]

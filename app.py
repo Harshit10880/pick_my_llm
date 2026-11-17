@@ -27,22 +27,36 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<p class="main-title">⚡ Pick My LLM</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-title">Free Benchmarking & Recommendation Engine to Pick the Optimal AI Model for Your Task</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-title">Free Multi-Provider Benchmarking & Recommendation Engine to Pick the Optimal AI Model</p>', unsafe_allow_html=True)
 
 # -------------------------------------------------------------
 # SIDEBAR: Configuration & API Keys
 # -------------------------------------------------------------
 st.sidebar.header("🔐 API Configuration & Keys")
-st.sidebar.info("Enter free API keys below. Keys are kept strictly in memory and never saved to disk.")
+st.sidebar.info("Enter free API keys below. Keys are kept strictly in memory and never written to disk.")
 
-groq_key = st.sidebar.text_input("Groq API Key", type="password")
-google_key = st.sidebar.text_input("Google AI Studio API Key", type="password")
-openrouter_key = st.sidebar.text_input("OpenRouter API Key", type="password")
+with st.sidebar.expander("☁️ Cloud API Keys", expanded=True):
+    groq_key = st.text_input("Groq API Key", type="password")
+    google_key = st.text_input("Google AI Studio API Key", type="password")
+    openrouter_key = st.text_input("OpenRouter API Key", type="password")
+    cerebras_key = st.text_input("Cerebras API Key (Optional)", type="password")
+    mistral_key = st.text_input("Mistral AI Key (Optional)", type="password")
+
+with st.sidebar.expander("💻 Local / Custom Endpoints", expanded=False):
+    ollama_url = st.text_input("Ollama Base URL", value="http://localhost:11434/v1")
+    custom_url = st.text_input("Custom Base URL (vLLM / DeepSeek)", value="")
+    custom_key = st.text_input("Custom API Key", type="password")
 
 api_keys = {
     "Groq": groq_key,
     "Google AI Studio": google_key,
-    "OpenRouter": openrouter_key
+    "OpenRouter": openrouter_key,
+    "Cerebras": cerebras_key,
+    "Mistral AI": mistral_key,
+    "Ollama (Local Offline)": "ollama",
+    "Ollama (Local Offline)_base_url": ollama_url,
+    "Custom (OpenAI-Compatible)": custom_key,
+    "Custom (OpenAI-Compatible)_base_url": custom_url
 }
 
 st.sidebar.markdown("---")
@@ -63,12 +77,14 @@ scoring_mode = st.sidebar.radio(
 )
 
 if scoring_mode == "LLM-as-a-Judge (AI evaluates open-ended answers)":
-    judge_provider_options = ["Groq", "Google AI Studio", "OpenRouter"]
+    judge_provider_options = ["Groq", "Google AI Studio", "OpenRouter", "Cerebras", "Mistral AI"]
     judge_provider = st.sidebar.selectbox("Judge Model Provider", judge_provider_options)
     judge_model_defaults = {
         "Groq": "llama-3.1-8b-instant",
         "Google AI Studio": "gemini-2.5-flash",
-        "OpenRouter": "mistralai/mistral-7b-instruct:free"
+        "OpenRouter": "mistralai/mistral-7b-instruct:free",
+        "Cerebras": "llama3.1-8b",
+        "Mistral AI": "mistral-small-latest"
     }
     judge_model = st.sidebar.text_input("Judge Model Name", value=judge_model_defaults[judge_provider])
     st.sidebar.info("The judge model uses your already-entered API key for the selected provider.")
@@ -105,45 +121,93 @@ with tab_benchmark:
         st.markdown("**Google AI Studio (Gemini)**")
         if st.checkbox("Gemini 2.5 Flash", value=True):
             selected_models.append({"provider": "Google AI Studio", "model": "gemini-2.5-flash"})
+        if st.checkbox("Gemini 2.5 Pro", value=False):
+            selected_models.append({"provider": "Google AI Studio", "model": "gemini-2.5-pro"})
 
     with col3:
         st.markdown("**OpenRouter (Free Models)**")
         if st.checkbox("Mistral 7B Instruct (Free)", value=False):
             selected_models.append({"provider": "OpenRouter", "model": "mistralai/mistral-7b-instruct:free"})
+        if st.checkbox("Llama 3.2 3B Instruct (Free)", value=False):
+            selected_models.append({"provider": "OpenRouter", "model": "meta-llama/llama-3.2-3b-instruct:free"})
+
+    # More Providers Expander
+    with st.expander("➕ More Providers: Cerebras, Mistral, Ollama (Local), or Custom Endpoint", expanded=False):
+        c_col1, c_col2, c_col3 = st.columns(3)
+        with c_col1:
+            st.markdown("**Cerebras (Fastest Inference)**")
+            if st.checkbox("Cerebras Llama 3.1 8B", value=False):
+                selected_models.append({"provider": "Cerebras", "model": "llama3.1-8b"})
+            if st.checkbox("Cerebras Llama 3.3 70B", value=False):
+                selected_models.append({"provider": "Cerebras", "model": "llama-3.3-70b"})
+        with c_col2:
+            st.markdown("**Mistral AI Official**")
+            if st.checkbox("Mistral Small Latest", value=False):
+                selected_models.append({"provider": "Mistral AI", "model": "mistral-small-latest"})
+            if st.checkbox("Codestral Latest (Coding)", value=False):
+                selected_models.append({"provider": "Mistral AI", "model": "codestral-latest"})
+        with c_col3:
+            st.markdown("**Ollama (Local Offline - Free)**")
+            if st.checkbox("Ollama Llama 3.2 (1B/3B)", value=False):
+                selected_models.append({"provider": "Ollama (Local Offline)", "model": "llama3.2:1b", "custom_base_url": ollama_url})
+            if st.checkbox("Ollama Mistral / Qwen", value=False):
+                selected_models.append({"provider": "Ollama (Local Offline)", "model": "mistral:latest", "custom_base_url": ollama_url})
 
     # TEST DATASET SETUP
     st.subheader("2️⃣ Load Test Questions")
 
     default_path = "data/sample_dataset.json"
+    all_sample_questions = []
     if os.path.exists(default_path):
         with open(default_path, "r", encoding="utf-8") as f:
-            default_questions = json.load(f)
+            all_sample_questions = json.load(f)
     else:
-        default_questions = [
+        all_sample_questions = [
             {"id": 1, "category": "Python", "question": "What is print(type([]))? Reply with option letter only.\nA) dict\nB) list", "correct_answer": "B"},
             {"id": 2, "category": "General", "question": "Capital of Gujarat? Just city name.", "correct_answer": "Gandhinagar"}
         ]
 
-    uploaded_file = st.file_uploader("Upload custom JSON question file (optional)", type=["json"])
-    if uploaded_file is not None:
-        try:
-            questions_data = json.load(uploaded_file)
-            st.success(f"Successfully loaded {len(questions_data)} questions from uploaded file!")
-        except Exception as e:
-            st.error(f"Error reading JSON file: {e}")
-            questions_data = default_questions
+    dataset_choice = st.radio(
+        "Choose Benchmark Test Suite:",
+        [
+            f"📚 Full Multi-Domain Suite ({len(all_sample_questions)} Questions: Python, SQL, ML, Logic, Multilingual, Cloud, Security)",
+            "⚡ Quick 5-Question Smoke Test",
+            "📁 Upload Custom JSON Suite"
+        ],
+        index=0
+    )
+
+    questions_data = []
+    if "Full" in dataset_choice:
+        questions_data = all_sample_questions
+        st.info(f"Loaded {len(questions_data)} questions spanning 8 knowledge domains.")
+    elif "Quick" in dataset_choice:
+        questions_data = all_sample_questions[:5]
+        st.info(f"Loaded top {len(questions_data)} fast questions.")
     else:
-        questions_data = default_questions
-        st.info(f"Using default sample test suite ({len(questions_data)} questions across multiple categories).")
+        uploaded_file = st.file_uploader("Upload custom JSON question file", type=["json"])
+        if uploaded_file is not None:
+            try:
+                questions_data = json.load(uploaded_file)
+                st.success(f"Successfully loaded {len(questions_data)} questions from uploaded file!")
+            except Exception as e:
+                st.error(f"Error reading JSON file: {e}")
+                questions_data = all_sample_questions[:5]
+        else:
+            questions_data = all_sample_questions[:5]
+            st.info("Upload a JSON file above, or using top 5 default questions as fallback.")
 
     # RUN BENCHMARK BUTTON
     st.subheader("3️⃣ Execute & Evaluate")
 
     if st.button("🚀 Run Benchmark Comparison", type="primary"):
+        has_local_only = bool(selected_models) and all(m.get("provider") == "Ollama (Local Offline)" for m in selected_models)
+        has_any_cloud_key = any(v for k, v in api_keys.items() if not k.endswith("_base_url") and k != "Ollama (Local Offline)")
+
         if not selected_models:
             st.warning("Please select at least one model to test.")
-        elif not demo_mode and not any(api_keys.values()):
-            st.error("Please enter at least one provider API key in the sidebar, or enable Demo Mode.")
+        elif not demo_mode and not has_any_cloud_key and not has_local_only:
+            st.error("Please enter at least one provider API key in the sidebar, run Ollama locally, or enable Demo Mode.")
         else:
             if demo_mode:
                 st.info("Running in Demo Mode using simulated benchmark responses...")
@@ -158,7 +222,7 @@ with tab_benchmark:
                             "question": q["question"],
                             "correct_answer": q["correct_answer"],
                             "answer": q["correct_answer"] if "8b" in m_name or "flash" in m_name else "Wrong Answer Example",
-                            "latency": 0.35 if "8b" in m_name else 0.85,
+                            "latency": 0.25 if "8b" in m_name else 0.75,
                             "prompt_tokens": 45,
                             "completion_tokens": 12,
                             "error": None
